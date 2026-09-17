@@ -4,7 +4,7 @@ Quick QA is a Manifest V3 Chrome extension that scans the currently open webpage
 
 Analysis runs **locally in the browser**. Page content is not sent to external servers, AI APIs, or cloud dashboards.
 
-Status: **1.2.0** — local extras: side panel, printable report, compare scans, on-page highlight, optional link HTTP checks. Still no Lighthouse, AI, or cloud.
+Status: **1.2.2** — local extras plus search/filter, Markdown copy, skip link / main / iframe / JSON-LD hints. Still no Lighthouse, AI, or cloud.
 
 ## Requirements analysis
 

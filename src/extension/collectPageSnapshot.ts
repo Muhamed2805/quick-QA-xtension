@@ -286,6 +286,31 @@ export function collectPageSnapshot(): PageSnapshot {
     }
   }
 
+  const skipPattern = /skip|jump\s+(to|over)|sadr[zž]aj|glavni sadr/i;
+  const hasSkipLink = Array.from(document.querySelectorAll('a[href]'))
+    .slice(0, 40)
+    .some((node) => {
+      const href = (node.getAttribute('href') ?? '').trim();
+      const name = accessibleName(node);
+      if (!href) return false;
+      const hashTarget = href.startsWith('#') || href.includes('#');
+      return hashTarget && (skipPattern.test(name) || skipPattern.test(href));
+    });
+
+  const hasMainLandmark = Boolean(document.querySelector('main, [role="main"]'));
+
+  const iframeNodes = Array.from(document.querySelectorAll('iframe'));
+  const iframesMissingTitle = iframeNodes.filter((node) => {
+    const title = attr(node, 'title');
+    const label = attr(node, 'aria-label');
+    const labelledBy = attr(node, 'aria-labelledby');
+    return !title && !label && !labelledBy;
+  }).length;
+
+  const jsonLdCount = document.querySelectorAll('script[type="application/ld+json" i]').length;
+  const hreflangCount = document.querySelectorAll('link[rel="alternate" i][hreflang]').length;
+  const visibleLinkCount = links.filter((item) => item.visible).length;
+
   const visibleText = (document.body?.innerText ?? '').replace(/\s+/g, ' ').trim().slice(0, MAX_TEXT);
   const wordCount = visibleText ? visibleText.split(' ').filter(Boolean).length : 0;
 
@@ -339,6 +364,15 @@ export function collectPageSnapshot(): PageSnapshot {
       wordCount,
       paragraphCount: document.querySelectorAll('p').length,
       visibleText,
+    },
+    documentHints: {
+      hasSkipLink,
+      hasMainLandmark,
+      visibleLinkCount,
+      iframeCount: iframeNodes.length,
+      iframesMissingTitle,
+      jsonLdCount,
+      hreflangCount,
     },
     technical: {
       scriptCount: document.scripts.length,

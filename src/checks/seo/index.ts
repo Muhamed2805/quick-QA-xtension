@@ -16,3 +16,5 @@ export { checkEmptyLinkText } from '@/checks/seo/checkEmptyLinkText';
 export { checkInternalExternalLinks } from '@/checks/seo/checkInternalExternalLinks';
 export { checkPageUrl } from '@/checks/seo/checkPageUrl';
 export { checkHttps } from '@/checks/seo/checkHttps';
+export { checkStructuredData } from '@/checks/seo/checkStructuredData';
+export { checkHreflang } from '@/checks/seo/checkHreflang';

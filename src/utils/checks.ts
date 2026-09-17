@@ -22,6 +22,30 @@ export function topIssues(checks: QACheckResult[], limit = 5): QACheckResult[] {
   );
 }
 
+export type CheckFilterMode = 'issues' | 'errors' | 'warnings' | 'all';
+
+export function matchesCheckQuery(check: QACheckResult, query: string): boolean {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  return [check.title, check.description, check.recommendation ?? '', check.id]
+    .join(' ')
+    .toLowerCase()
+    .includes(needle);
+}
+
+export function filterChecks(
+  checks: QACheckResult[],
+  mode: CheckFilterMode,
+  query = '',
+): QACheckResult[] {
+  return checks.filter((item) => {
+    if (mode === 'issues' && item.status !== 'fail' && item.status !== 'warning') return false;
+    if (mode === 'errors' && item.status !== 'fail') return false;
+    if (mode === 'warnings' && item.status !== 'warning') return false;
+    return matchesCheckQuery(item, query);
+  });
+}
+
 export function formatCurrentValue(value: QACheckResult['currentValue']): string | null {
   if (value === undefined) return null;
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';

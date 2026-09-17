@@ -3,6 +3,7 @@ import { CheckList } from '@/components/CheckList';
 import { ImageTable } from '@/components/ImageTable';
 import { StatCard } from '@/components/StatCard';
 import { downloadJson } from '@/export/toJson';
+import { copyMarkdownIssues } from '@/export/toMarkdown';
 import { copyTextSummary } from '@/export/toSummary';
 import { clearHighlights, highlightCurrentTab } from '@/extension/highlight';
 import {
@@ -14,7 +15,7 @@ import {
 import { CATEGORY_NAV } from '@/features/popup/constants';
 import type { LinkStatusResult, QACategory, ScanResult } from '@/types';
 import { shouldExplainFormsVsAccessibility } from '@/utils/categoryNotes';
-import { topIssues } from '@/utils/checks';
+import { filterChecks, topIssues, type CheckFilterMode } from '@/utils/checks';
 import { useState } from 'react';
 
 type ResultsShellProps = {
@@ -32,8 +33,9 @@ function scoreTone(score: number): 'pass' | 'warn' | 'fail' {
 
 export function ResultsShell({ result, tabId, onRescan, onIgnoreCheck }: ResultsShellProps) {
   const [section, setSection] = useState<QACategory | 'overview'>('overview');
-  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
-  const [issuesOnly, setIssuesOnly] = useState(true);
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'copied-md' | 'failed'>('idle');
+  const [checkFilter, setCheckFilter] = useState<CheckFilterMode>('issues');
+  const [checkQuery, setCheckQuery] = useState('');
   const [highlightState, setHighlightState] = useState<string | null>(null);
   const [linkBusy, setLinkBusy] = useState(false);
   const [linkResults, setLinkResults] = useState<LinkStatusResult[] | null>(null);
@@ -44,16 +46,27 @@ export function ResultsShell({ result, tabId, onRescan, onIgnoreCheck }: Results
   const sectionChecks =
     section === 'overview'
       ? []
-      : checks.filter((item) => {
-          if (item.category !== section) return false;
-          if (!issuesOnly) return true;
-          return item.status === 'fail' || item.status === 'warning';
-        });
+      : filterChecks(
+          checks.filter((item) => item.category === section),
+          checkFilter,
+          checkQuery,
+        );
+  const overviewIssues = filterChecks(issues, 'issues', checkQuery);
 
   const handleCopy = async () => {
     try {
       await copyTextSummary(result);
       setCopyState('copied');
+      window.setTimeout(() => setCopyState('idle'), 1800);
+    } catch {
+      setCopyState('failed');
+    }
+  };
+
+  const handleCopyMarkdown = async () => {
+    try {
+      await copyMarkdownIssues(result);
+      setCopyState('copied-md');
       window.setTimeout(() => setCopyState('idle'), 1800);
     } catch {
       setCopyState('failed');
@@ -149,6 +162,13 @@ export function ResultsShell({ result, tabId, onRescan, onIgnoreCheck }: Results
           </button>
           <button
             type="button"
+            onClick={() => void handleCopyMarkdown()}
+            className="rounded-md border border-surface-border bg-white px-2.5 py-1 text-xs font-medium hover:bg-surface-muted"
+          >
+            {copyState === 'copied-md' ? 'Copied Markdown' : 'Copy Markdown'}
+          </button>
+          <button
+            type="button"
             onClick={handlePrint}
             className="rounded-md border border-surface-border bg-white px-2.5 py-1 text-xs font-medium hover:bg-surface-muted"
           >
@@ -217,7 +237,8 @@ export function ResultsShell({ result, tabId, onRescan, onIgnoreCheck }: Results
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">
                 Top issues
               </h3>
-              <CheckList checks={issues} emptyLabel="No errors or warnings on this scan." onIgnore={onIgnoreCheck} />
+              <CheckSearch value={checkQuery} onChange={setCheckQuery} />
+              <CheckList checks={overviewIssues} emptyLabel="No errors or warnings on this scan." onIgnore={onIgnoreCheck} />
             </div>
           </div>
         ) : null}
@@ -272,23 +293,62 @@ export function ResultsShell({ result, tabId, onRescan, onIgnoreCheck }: Results
 
         {section !== 'overview' ? (
           <div className="mt-3">
-            <label className="mb-3 flex items-center gap-2 text-xs text-ink-secondary">
-              <input
-                type="checkbox"
-                checked={issuesOnly}
-                onChange={(event) => setIssuesOnly(event.target.checked)}
-              />
-              Issues only
-            </label>
+            <div className="mb-3 flex flex-col gap-2">
+              <CheckSearch value={checkQuery} onChange={setCheckQuery} />
+              <div className="flex flex-wrap gap-1">
+                {(
+                  [
+                    ['issues', 'Issues'],
+                    ['errors', 'Errors'],
+                    ['warnings', 'Warnings'],
+                    ['all', 'All'],
+                  ] as const
+                ).map(([mode, label]) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setCheckFilter(mode)}
+                    className={`rounded-md px-2 py-1 text-[11px] font-medium ${
+                      checkFilter === mode
+                        ? 'bg-ink text-white'
+                        : 'border border-surface-border bg-white text-ink-secondary hover:bg-surface-muted'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <CheckList
               checks={sectionChecks}
-              emptyLabel={issuesOnly ? 'No errors or warnings in this category.' : 'No findings in this category.'}
+              emptyLabel={
+                checkQuery.trim()
+                  ? 'No checks match this search.'
+                  : checkFilter === 'all'
+                    ? 'No findings in this category.'
+                    : 'No matching issues in this category.'
+              }
               onIgnore={onIgnoreCheck}
             />
           </div>
         ) : null}
       </section>
     </div>
+  );
+}
+
+function CheckSearch({ value, onChange }: { value: string; onChange: (next: string) => void }) {
+  return (
+    <label className="mb-2 block">
+      <span className="sr-only">Search checks</span>
+      <input
+        type="search"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Search checks…"
+        className="w-full rounded-md border border-surface-border bg-white px-2.5 py-1.5 text-xs text-ink placeholder:text-ink-muted"
+      />
+    </label>
   );
 }
 

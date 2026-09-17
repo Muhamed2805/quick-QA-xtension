@@ -1,6 +1,6 @@
 {
   "name": "quick-qa",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "private": true,
   "description": "Quick QA — local webpage auditing Chrome extension for SEO, accessibility, and technical checks.",
   "license": "MIT",

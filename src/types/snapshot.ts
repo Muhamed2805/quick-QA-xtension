@@ -133,6 +133,16 @@ export interface SnapshotMeta {
   twitterImage: string | null;
 }
 
+export interface DocumentHints {
+  hasSkipLink: boolean;
+  hasMainLandmark: boolean;
+  visibleLinkCount: number;
+  iframeCount: number;
+  iframesMissingTitle: number;
+  jsonLdCount: number;
+  hreflangCount: number;
+}
+
 export interface SnapshotLimits {
   maxLinks: number;
   maxImages: number;
@@ -165,5 +175,6 @@ export interface PageSnapshot {
   ariaHints: AriaHintSnapshot[];
   content: ContentSnapshot;
   technical: TechnicalSnapshot;
+  documentHints: DocumentHints;
   limits: SnapshotLimits;
 }

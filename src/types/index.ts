@@ -47,6 +47,7 @@ export type {
   AriaHintSnapshot,
   ButtonSnapshot,
   ContentSnapshot,
+  DocumentHints,
   FormFieldInfo,
   FormInfo,
   HeadingInfo,

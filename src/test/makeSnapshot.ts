@@ -1,11 +1,12 @@
 import type { PageSnapshot } from '@/types';
 
-type SnapshotOverrides = Partial<Omit<PageSnapshot, 'meta' | 'content' | 'technical' | 'limits'>> & {
+type SnapshotOverrides = Partial<Omit<PageSnapshot, 'meta' | 'content' | 'technical' | 'limits' | 'documentHints'>> & {
   meta?: Partial<PageSnapshot['meta']>;
   content?: Partial<PageSnapshot['content']>;
   technical?: Partial<PageSnapshot['technical']> & {
     performance?: Partial<PageSnapshot['technical']['performance']>;
   };
+  documentHints?: Partial<PageSnapshot['documentHints']>;
   limits?: Partial<PageSnapshot['limits']>;
 };
 
@@ -71,6 +72,15 @@ export function makeSnapshot(overrides: SnapshotOverrides = {}): PageSnapshot {
       paragraphCount: 2,
       visibleText: 'Example Domain This domain is for use in illustrative examples.',
     },
+    documentHints: {
+      hasSkipLink: true,
+      hasMainLandmark: true,
+      visibleLinkCount: 1,
+      iframeCount: 0,
+      iframesMissingTitle: 0,
+      jsonLdCount: 1,
+      hreflangCount: 0,
+    },
     technical: {
       scriptCount: 1,
       stylesheetCount: 1,
@@ -103,6 +113,7 @@ export function makeSnapshot(overrides: SnapshotOverrides = {}): PageSnapshot {
     ...overrides,
     meta: { ...base.meta, ...overrides.meta },
     content: { ...base.content, ...overrides.content },
+    documentHints: { ...base.documentHints, ...overrides.documentHints },
     technical: {
       ...base.technical,
       ...overrides.technical,

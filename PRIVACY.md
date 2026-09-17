@@ -26,7 +26,7 @@ It does this only to produce a local report.
 
 Optional scan history is stored with `chrome.storage.local` on your device. Each entry includes domain, URL, timestamp, overall score, and error/warning counts. History does **not** include the page DOM or form values. You can clear it from the popup.
 
-JSON export and “Copy Summary” stay on your device (a file download or the clipboard).
+JSON export, “Copy Summary”, and “Copy Markdown” stay on your device (a file download or the clipboard).
 
 ## Permissions
 

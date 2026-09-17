@@ -1,4 +1,7 @@
 export { checkA11yAria } from '@/checks/accessibility/checkA11yAria';
+export { checkA11yIframes } from '@/checks/accessibility/checkA11yIframes';
+export { checkA11yMainLandmark } from '@/checks/accessibility/checkA11yMainLandmark';
+export { checkA11ySkipLink } from '@/checks/accessibility/checkA11ySkipLink';
 export { checkA11yButtons } from '@/checks/accessibility/checkA11yButtons';
 export { checkA11yDocumentTitle } from '@/checks/accessibility/checkA11yDocumentTitle';
 export { checkA11yEmptyAlt } from '@/checks/accessibility/checkA11yEmptyAlt';
