@@ -1,8 +1,10 @@
 import { CategoryNav } from '@/components/CategoryNav';
+import { CheckList } from '@/components/CheckList';
 import { FactList } from '@/components/FactList';
 import { StatCard } from '@/components/StatCard';
 import { CATEGORY_NAV } from '@/features/popup/constants';
 import type { QACategory, ScanResult } from '@/types';
+import { topIssues } from '@/utils/checks';
 import { useState } from 'react';
 
 type ResultsShellProps = {
@@ -17,10 +19,12 @@ function countLinks(result: ScanResult, kind: ScanResult['links'][number]['kind'
 export function ResultsShell({ result, onRescan }: ResultsShellProps) {
   const [section, setSection] = useState<QACategory | 'overview'>('overview');
   const sectionLabel = CATEGORY_NAV.find((item) => item.id === section)?.label ?? 'Overview';
-  const { snapshot, page } = result;
+  const { snapshot, page, checks } = result;
   const headingCounts = [1, 2, 3, 4, 5, 6]
     .map((level) => `H${level}:${snapshot.headings.filter((item) => item.level === level).length}`)
     .join('  ');
+  const seoChecks = checks.filter((item) => item.category === 'seo');
+  const issues = topIssues(checks);
 
   return (
     <div className="flex min-h-[540px] flex-col">
@@ -52,56 +56,70 @@ export function ResultsShell({ result, onRescan }: ResultsShellProps) {
 
       <section className="flex-1 overflow-y-auto px-4 py-4">
         <h2 className="text-sm font-semibold">{sectionLabel}</h2>
-        <p className="mt-1 text-xs leading-5 text-ink-muted">
-          Snapshot collected locally. QA rules are not scored yet — this view shows page facts the
-          engine will evaluate next.
-        </p>
 
-        <div className="mt-3">
-          {section === 'overview' ? (
+        {section === 'overview' ? (
+          <div className="mt-3 flex flex-col gap-4">
+            <p className="text-xs leading-5 text-ink-muted">
+              SEO rules are active. Other categories still show collected page facts until their
+              checks land.
+            </p>
             <FactList
               items={[
                 { label: 'Title', value: snapshot.title || '(missing)' },
                 { label: 'URL', value: snapshot.url },
-                { label: 'Words', value: String(snapshot.content.wordCount) },
-                { label: 'Headings', value: String(snapshot.headings.length) },
+                { label: 'SEO checks', value: String(seoChecks.length) },
                 { label: 'Links', value: String(snapshot.links.length) },
                 { label: 'Images', value: String(snapshot.images.length) },
                 { label: 'Forms', value: String(snapshot.forms.length) },
-                { label: 'DOM nodes', value: String(snapshot.technical.domElementCount) },
               ]}
             />
-          ) : null}
+            <div>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                Top issues
+              </h3>
+              <CheckList checks={issues} emptyLabel="No SEO errors or warnings on this page." />
+            </div>
+          </div>
+        ) : null}
 
-          {section === 'seo' ? (
-            <FactList
-              items={[
-                { label: 'Title', value: snapshot.title || '(missing)' },
-                { label: 'Description', value: snapshot.meta.description || '(missing)' },
-                { label: 'Canonical', value: snapshot.canonical || '(missing)' },
-                { label: 'Robots', value: snapshot.meta.robots || '(none)' },
-                { label: 'OG title', value: snapshot.meta.ogTitle || '(missing)' },
-                { label: 'OG image', value: snapshot.meta.ogImage || '(missing)' },
-                { label: 'Twitter', value: snapshot.meta.twitterCard || '(missing)' },
-                { label: 'H1 count', value: String(snapshot.headings.filter((item) => item.level === 1).length) },
-              ]}
-            />
-          ) : null}
+        {section === 'seo' ? (
+          <div className="mt-3">
+            <p className="mb-3 text-xs leading-5 text-ink-muted">
+              Title and meta length ranges are recommendations for typical search snippets, not
+              ranking requirements.
+            </p>
+            <CheckList checks={seoChecks} />
+          </div>
+        ) : null}
 
-          {section === 'accessibility' ? (
+        {section === 'accessibility' ? (
+          <div className="mt-3">
             <FactList
               items={[
                 { label: 'Language', value: snapshot.lang || '(missing)' },
-                { label: 'No-name buttons', value: String(snapshot.buttons.filter((item) => !item.hasAccessibleName).length) },
-                { label: 'Unlabeled inputs', value: String(snapshot.inputs.filter((item) => !item.hasLabel && !item.hasAriaName).length) },
+                {
+                  label: 'No-name buttons',
+                  value: String(snapshot.buttons.filter((item) => !item.hasAccessibleName).length),
+                },
+                {
+                  label: 'Unlabeled inputs',
+                  value: String(
+                    snapshot.inputs.filter((item) => !item.hasLabel && !item.hasAriaName).length,
+                  ),
+                },
                 { label: 'tabindex > 0', value: String(snapshot.tabIndexes.length) },
                 { label: 'ARIA hints', value: String(snapshot.ariaHints.length) },
-                { label: 'Missing alt', value: String(snapshot.images.filter((item) => item.status === 'missing-alt').length) },
+                {
+                  label: 'Missing alt',
+                  value: String(snapshot.images.filter((item) => item.status === 'missing-alt').length),
+                },
               ]}
             />
-          ) : null}
+          </div>
+        ) : null}
 
-          {section === 'links' ? (
+        {section === 'links' ? (
+          <div className="mt-3">
             <FactList
               items={[
                 { label: 'Total', value: String(snapshot.links.length) },
@@ -110,46 +128,78 @@ export function ResultsShell({ result, onRescan }: ResultsShellProps) {
                 { label: 'Anchor', value: String(countLinks(result, 'anchor')) },
                 { label: 'Empty href', value: String(countLinks(result, 'empty')) },
                 { label: 'javascript:', value: String(countLinks(result, 'javascript')) },
-                { label: 'New tab', value: String(snapshot.links.filter((item) => item.targetBlank).length) },
+                {
+                  label: 'New tab',
+                  value: String(snapshot.links.filter((item) => item.targetBlank).length),
+                },
               ]}
             />
-          ) : null}
+          </div>
+        ) : null}
 
-          {section === 'images' ? (
+        {section === 'images' ? (
+          <div className="mt-3">
             <FactList
               items={[
                 { label: 'Total', value: String(snapshot.images.length) },
-                { label: 'Missing alt', value: String(snapshot.images.filter((item) => item.status === 'missing-alt').length) },
-                { label: 'Empty alt', value: String(snapshot.images.filter((item) => item.status === 'empty-alt').length) },
+                {
+                  label: 'Missing alt',
+                  value: String(snapshot.images.filter((item) => item.status === 'missing-alt').length),
+                },
+                {
+                  label: 'Empty alt',
+                  value: String(snapshot.images.filter((item) => item.status === 'empty-alt').length),
+                },
                 { label: 'Broken', value: String(snapshot.images.filter((item) => item.broken).length) },
-                { label: 'Lazy', value: String(snapshot.images.filter((item) => item.loading === 'lazy').length) },
+                {
+                  label: 'Lazy',
+                  value: String(snapshot.images.filter((item) => item.loading === 'lazy').length),
+                },
               ]}
             />
-          ) : null}
+          </div>
+        ) : null}
 
-          {section === 'forms' ? (
+        {section === 'forms' ? (
+          <div className="mt-3">
             <FactList
               items={[
                 { label: 'Forms', value: String(snapshot.forms.length) },
-                { label: 'Fields', value: String(snapshot.forms.reduce((sum, form) => sum + form.fieldCount, 0)) },
-                { label: 'No submit', value: String(snapshot.forms.filter((form) => !form.hasSubmitControl).length) },
-                { label: 'Password', value: String(snapshot.forms.reduce((sum, form) => sum + form.passwordFieldCount, 0)) },
+                {
+                  label: 'Fields',
+                  value: String(snapshot.forms.reduce((sum, form) => sum + form.fieldCount, 0)),
+                },
+                {
+                  label: 'No submit',
+                  value: String(snapshot.forms.filter((form) => !form.hasSubmitControl).length),
+                },
+                {
+                  label: 'Password',
+                  value: String(snapshot.forms.reduce((sum, form) => sum + form.passwordFieldCount, 0)),
+                },
               ]}
             />
-          ) : null}
+          </div>
+        ) : null}
 
-          {section === 'content' ? (
+        {section === 'content' ? (
+          <div className="mt-3">
             <FactList
               items={[
                 { label: 'Words', value: String(snapshot.content.wordCount) },
                 { label: 'Paragraphs', value: String(snapshot.content.paragraphCount) },
                 { label: 'Headings', value: headingCounts },
-                { label: 'Empty H', value: String(snapshot.headings.filter((item) => !item.text).length) },
+                {
+                  label: 'Empty H',
+                  value: String(snapshot.headings.filter((item) => !item.text).length),
+                },
               ]}
             />
-          ) : null}
+          </div>
+        ) : null}
 
-          {section === 'technical' ? (
+        {section === 'technical' ? (
+          <div className="mt-3">
             <FactList
               items={[
                 { label: 'Protocol', value: snapshot.protocol.toUpperCase() },
@@ -157,12 +207,24 @@ export function ResultsShell({ result, onRescan }: ResultsShellProps) {
                 { label: 'Viewport', value: snapshot.technical.viewport || '(missing)' },
                 { label: 'Scripts', value: String(snapshot.technical.scriptCount) },
                 { label: 'Styles', value: String(snapshot.technical.stylesheetCount) },
-                { label: 'DCL ms', value: snapshot.technical.performance.domContentLoadedMs != null ? String(snapshot.technical.performance.domContentLoadedMs) : '—' },
-                { label: 'Resources', value: snapshot.technical.performance.resourceCount != null ? String(snapshot.technical.performance.resourceCount) : '—' },
+                {
+                  label: 'DCL ms',
+                  value:
+                    snapshot.technical.performance.domContentLoadedMs != null
+                      ? String(snapshot.technical.performance.domContentLoadedMs)
+                      : '—',
+                },
+                {
+                  label: 'Resources',
+                  value:
+                    snapshot.technical.performance.resourceCount != null
+                      ? String(snapshot.technical.performance.resourceCount)
+                      : '—',
+                },
               ]}
             />
-          ) : null}
-        </div>
+          </div>
+        ) : null}
       </section>
     </div>
   );

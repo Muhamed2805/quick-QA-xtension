@@ -1,7 +1,42 @@
 import type { CheckFn } from '@/checks/runChecks';
+import {
+  checkCanonical,
+  checkEmptyLinkText,
+  checkH1Exists,
+  checkHeadingHierarchy,
+  checkHttps,
+  checkInternalExternalLinks,
+  checkMetaDescriptionExists,
+  checkMetaDescriptionLength,
+  checkMissingAlt,
+  checkMultipleH1,
+  checkOgDescription,
+  checkOgImage,
+  checkOgTitle,
+  checkPageUrl,
+  checkRobotsMeta,
+  checkTitleExists,
+  checkTitleLength,
+  checkTwitterCard,
+} from '@/checks/seo';
 
-/**
- * Register QA rules here as they are implemented.
- * M2 ships an empty registry so the engine is live without scoring noise.
- */
-export const checkRegistry: CheckFn[] = [];
+export const checkRegistry: CheckFn[] = [
+  checkTitleExists,
+  checkTitleLength,
+  checkMetaDescriptionExists,
+  checkMetaDescriptionLength,
+  checkCanonical,
+  checkRobotsMeta,
+  checkOgTitle,
+  checkOgDescription,
+  checkOgImage,
+  checkTwitterCard,
+  checkH1Exists,
+  checkMultipleH1,
+  checkHeadingHierarchy,
+  checkMissingAlt,
+  checkEmptyLinkText,
+  checkInternalExternalLinks,
+  checkPageUrl,
+  checkHttps,
+];

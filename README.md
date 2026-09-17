@@ -4,7 +4,7 @@ Quick QA is a Manifest V3 Chrome extension that scans the currently open webpage
 
 Analysis runs **locally in the browser**. Page content is not sent to external servers, AI APIs, or cloud dashboards.
 
-Status: **Milestone 2** — scanning engine and page snapshot (no scored QA rules yet).
+Status: **Milestone 3** — SEO checks on the local page snapshot.
 
 ## Requirements analysis
 
@@ -53,7 +53,7 @@ Each rule is a pure function:
 (snapshot: PageSnapshot) => QACheckResult | QACheckResult[]
 ```
 
-Rules are registered per category (`checks/seo`, `checks/accessibility`, …). The engine:
+SEO rules (M3) live in `src/checks/seo/` and are listed in `src/checks/registry.ts`. Later categories follow the same pattern. The engine:
 
 1. Runs the registry.
 2. Normalizes results (`id`, `category`, `title`, `description`, `severity`, `status`, `currentValue`, `recommendation`, `weight`).
@@ -139,7 +139,7 @@ Defined in `src/types/index.ts`:
 |---|---|
 | **M1** | Chrome extension foundation + popup UI |
 | **M2** | Scanning engine and shared snapshot types |
-| M3 | SEO checks |
+| **M3** | SEO checks |
 | M4 | Accessibility + image checks |
 | M5 | Links + forms |
 | M6 | Content + technical checks |
