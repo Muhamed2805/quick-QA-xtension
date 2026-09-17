@@ -129,11 +129,40 @@ export function collectPageSnapshot(): PageSnapshot {
     return 'ok';
   };
 
-  const headingNodes = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
-  const headings = headingNodes.slice(0, MAX_HEADINGS).map((node) => ({
-    level: Number(node.tagName[1]) as 1 | 2 | 3 | 4 | 5 | 6,
-    text: textOf(node),
-  }));
+  const headingLevel = (el: Element): 1 | 2 | 3 | 4 | 5 | 6 | null => {
+    const tag = el.tagName.toLowerCase();
+    if (/^h[1-6]$/.test(tag)) {
+      return Number(tag[1]) as 1 | 2 | 3 | 4 | 5 | 6;
+    }
+    if ((el.getAttribute('role') ?? '').toLowerCase() === 'heading') {
+      const level = Number(el.getAttribute('aria-level'));
+      if (level >= 1 && level <= 6) {
+        return level as 1 | 2 | 3 | 4 | 5 | 6;
+      }
+    }
+    return null;
+  };
+
+  const collectHeadingElements = (root: ParentNode, acc: Element[]) => {
+    root.querySelectorAll('h1, h2, h3, h4, h5, h6, [role="heading"]').forEach((node) => acc.push(node));
+    root.querySelectorAll('*').forEach((node) => {
+      if (node.shadowRoot) {
+        collectHeadingElements(node.shadowRoot, acc);
+      }
+    });
+  };
+
+  const headingElements: Element[] = [];
+  collectHeadingElements(document, headingElements);
+  const headingNodes = [...new Set(headingElements)];
+  const headings = headingNodes
+    .map((node) => {
+      const level = headingLevel(node);
+      if (!level) return null;
+      return { level, text: textOf(node) };
+    })
+    .filter((item): item is { level: 1 | 2 | 3 | 4 | 5 | 6; text: string } => Boolean(item))
+    .slice(0, MAX_HEADINGS);
 
   const anchorNodes = Array.from(document.querySelectorAll('a'));
   const links = anchorNodes.slice(0, MAX_LINKS).map((node) => {
