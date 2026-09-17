@@ -21,7 +21,7 @@ export const checkA11yHeadings: CheckFn = (snapshot) => {
     return a11yCheck({
       id: 'a11y-heading-structure',
       title: 'Heading structure',
-      description: 'Heading levels do not skip. This is a basic outline check, not a WCAG audit.',
+      description: 'The page has headings and levels do not skip. This is not a WCAG audit.',
       status: 'pass',
       severity: 'info',
       currentValue: snapshot.headings.length,
@@ -32,11 +32,10 @@ export const checkA11yHeadings: CheckFn = (snapshot) => {
   return a11yCheck({
     id: 'a11y-heading-structure',
     title: 'Heading structure',
-    description: `Heading levels skip in ${skips.length} place(s): ${skips.slice(0, 5).join(', ')}.`,
-    status: 'warning',
-    severity: 'warning',
-    recommendation: 'Avoid skipping levels so the outline stays predictable.',
+    description: `Heading levels skip (${skips.slice(0, 5).join(', ')}). That outline issue is reported once under SEO so it is not counted twice.`,
+    status: 'info',
+    severity: 'info',
     currentValue: skips.join(', '),
-    weight: 4,
+    weight: 0,
   });
 };

@@ -6,6 +6,7 @@ import { downloadJson } from '@/export/toJson';
 import { copyTextSummary } from '@/export/toSummary';
 import { CATEGORY_NAV } from '@/features/popup/constants';
 import type { QACategory, ScanResult } from '@/types';
+import { shouldExplainFormsVsAccessibility } from '@/utils/categoryNotes';
 import { topIssues } from '@/utils/checks';
 import { useState } from 'react';
 
@@ -25,7 +26,7 @@ export function ResultsShell({ result, onRescan }: ResultsShellProps) {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const sectionLabel = CATEGORY_NAV.find((item) => item.id === section)?.label ?? 'Overview';
   const { page, checks, summary } = result;
-  const issues = topIssues(checks, 6);
+  const issues = topIssues(checks, 8);
   const sectionChecks =
     section === 'overview' ? [] : checks.filter((item) => item.category === section);
 
@@ -92,6 +93,17 @@ export function ResultsShell({ result, onRescan }: ResultsShellProps) {
               Weighted score from pass / warning / fail checks. Informational findings do not reduce
               the score. This is not Lighthouse or a WCAG certification.
             </p>
+            {shouldExplainFormsVsAccessibility(result) ? (
+              <div className="rounded-md border border-info/20 bg-info-soft px-3 py-2.5">
+                <p className="text-xs font-medium text-info">Forms vs accessibility</p>
+                <p className="mt-1 text-xs leading-5 text-ink-secondary">
+                  A high Forms score only means the actual <code className="text-[11px]">&lt;form&gt;</code>{' '}
+                  elements look all right. Accessibility also scores search boxes, icon buttons, and
+                  links that sit outside those forms — so those two numbers can disagree on a shop
+                  homepage.
+                </p>
+              </div>
+            ) : null}
             <div className="grid grid-cols-2 gap-2">
               {result.categories.map((item) => (
                 <button
@@ -123,6 +135,13 @@ export function ResultsShell({ result, onRescan }: ResultsShellProps) {
         {section === 'accessibility' ? (
           <p className="mt-1 text-xs leading-5 text-ink-muted">
             These checks catch common problems. They do not prove WCAG conformance.
+          </p>
+        ) : null}
+
+        {section === 'forms' ? (
+          <p className="mt-1 text-xs leading-5 text-ink-muted">
+            This category inspects <code className="text-[11px]">&lt;form&gt;</code> markup only.
+            Search and filter fields outside a form are scored under Accessibility.
           </p>
         ) : null}
 
