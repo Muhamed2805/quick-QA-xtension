@@ -10,6 +10,22 @@ body,
   margin: 0;
 }
 
+html[data-surface='side'],
+html[data-surface='side'] body,
+html[data-surface='side'] #root,
+html[data-surface='report'],
+html[data-surface='report'] body,
+html[data-surface='report'] #root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+@media print {
+  .print\:hidden {
+    display: none !important;
+  }
+}
+
 body {
   @apply bg-surface text-ink antialiased;
 }

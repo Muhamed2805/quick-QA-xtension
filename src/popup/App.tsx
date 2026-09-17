@@ -1,7 +1,4 @@
-import { ignoreCheck, loadIgnoredChecks, restoreIgnoredChecks } from '@/extension/ignores';
-import { applyIgnoredChecks } from '@/scoring/applyIgnoredChecks';
-import { runScan } from '@/engine/runScan';
-import { ResultsShell } from '@/features/popup/ResultsShell';
+import { ComparePanel } from '@/components/ComparePanel';
 import { DomainCard } from '@/components/DomainCard';
 import { ErrorPanel } from '@/components/ErrorPanel';
 import { Header } from '@/components/Header';
@@ -9,7 +6,11 @@ import { HistoryList } from '@/components/HistoryList';
 import { ScanButton } from '@/components/ScanButton';
 import { captureSnapshot } from '@/extension/captureSnapshot';
 import { clearHistory, loadHistory, saveHistoryEntry } from '@/extension/history';
+import { ignoreCheck, loadIgnoredChecks, restoreIgnoredChecks } from '@/extension/ignores';
+import { runScan } from '@/engine/runScan';
+import { ResultsShell } from '@/features/popup/ResultsShell';
 import { useActiveTab } from '@/hooks/useActiveTab';
+import { applyIgnoredChecks } from '@/scoring/applyIgnoredChecks';
 import type { ScanHistoryEntry, ScanResult } from '@/types';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -100,7 +101,12 @@ export function App() {
     return (
       <>
         <Header subtitle="Report" />
-        <ResultsShell result={presented} onRescan={handleNewScan} onIgnoreCheck={handleIgnore} />
+        <ResultsShell
+          result={presented}
+          tabId={tab?.tabId ?? null}
+          onRescan={handleNewScan}
+          onIgnoreCheck={handleIgnore}
+        />
       </>
     );
   }
@@ -120,6 +126,20 @@ export function App() {
           Quick QA inspects the current tab locally. Page content is never uploaded.
         </p>
 
+        <button
+          type="button"
+          onClick={() => {
+            void chrome.windows.getCurrent().then((windowInfo) => {
+              if (windowInfo.id != null) {
+                void chrome.sidePanel.open({ windowId: windowInfo.id });
+              }
+            });
+          }}
+          className="rounded-md border border-surface-border bg-white px-3 py-2 text-xs font-medium hover:bg-surface-muted"
+        >
+          Open side panel
+        </button>
+
         {ignoredIds.length > 0 ? (
           <div className="rounded-md border border-surface-border bg-white px-3 py-2">
             <p className="text-xs text-ink-secondary">{ignoredIds.length} hidden check(s) stay local.</p>
@@ -132,6 +152,8 @@ export function App() {
             </button>
           </div>
         ) : null}
+
+        <ComparePanel entries={history} />
 
         <HistoryList entries={history} onClear={handleClearHistory} />
       </main>

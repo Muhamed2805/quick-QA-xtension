@@ -46,6 +46,10 @@ Quick QA is a developer/QA tool. It is not directed at children.
 
 If this policy changes, we will update this file and the date above.
 
+## Optional features
+
+If you click **Check link statuses**, Chrome will ask to contact http/https URLs so Quick QA can read HTTP status codes. This is off unless you grant it. Highlights add temporary outlines on the current tab and can be removed from the on-page banner.
+
 ## Contact
 
 Use the GitHub repository for the project: [quick-QA-xtension](https://github.com/Muhamed2805/quick-QA-xtension).

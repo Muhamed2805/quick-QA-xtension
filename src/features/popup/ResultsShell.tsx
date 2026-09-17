@@ -4,14 +4,22 @@ import { ImageTable } from '@/components/ImageTable';
 import { StatCard } from '@/components/StatCard';
 import { downloadJson } from '@/export/toJson';
 import { copyTextSummary } from '@/export/toSummary';
+import { clearHighlights, highlightCurrentTab } from '@/extension/highlight';
+import {
+  checkLinkStatuses,
+  httpLinksFrom,
+  LINK_CHECK_LIMIT,
+  requestLinkCheckPermission,
+} from '@/extension/linkStatus';
 import { CATEGORY_NAV } from '@/features/popup/constants';
-import type { QACategory, ScanResult } from '@/types';
+import type { LinkStatusResult, QACategory, ScanResult } from '@/types';
 import { shouldExplainFormsVsAccessibility } from '@/utils/categoryNotes';
 import { topIssues } from '@/utils/checks';
 import { useState } from 'react';
 
 type ResultsShellProps = {
   result: ScanResult;
+  tabId: number | null;
   onRescan: () => void;
   onIgnoreCheck: (id: string) => void;
 };
@@ -22,10 +30,14 @@ function scoreTone(score: number): 'pass' | 'warn' | 'fail' {
   return 'fail';
 }
 
-export function ResultsShell({ result, onRescan, onIgnoreCheck }: ResultsShellProps) {
+export function ResultsShell({ result, tabId, onRescan, onIgnoreCheck }: ResultsShellProps) {
   const [section, setSection] = useState<QACategory | 'overview'>('overview');
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [issuesOnly, setIssuesOnly] = useState(true);
+  const [highlightState, setHighlightState] = useState<string | null>(null);
+  const [linkBusy, setLinkBusy] = useState(false);
+  const [linkResults, setLinkResults] = useState<LinkStatusResult[] | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const sectionLabel = CATEGORY_NAV.find((item) => item.id === section)?.label ?? 'Overview';
   const { page, checks, summary } = result;
   const issues = topIssues(checks, 8);
@@ -45,6 +57,54 @@ export function ResultsShell({ result, onRescan, onIgnoreCheck }: ResultsShellPr
       window.setTimeout(() => setCopyState('idle'), 1800);
     } catch {
       setCopyState('failed');
+    }
+  };
+
+  const handlePrint = () => {
+    void chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
+  };
+
+  const handleHighlight = async () => {
+    if (tabId == null) {
+      setHighlightState('No tab to highlight.');
+      return;
+    }
+    try {
+      const marked = await highlightCurrentTab(tabId);
+      setHighlightState(`Outlined ${marked} element(s). Use Remove on the page banner to clear.`);
+    } catch {
+      setHighlightState('Could not highlight this page.');
+    }
+  };
+
+  const handleClearHighlight = async () => {
+    if (tabId == null) return;
+    try {
+      await clearHighlights(tabId);
+      setHighlightState('Highlights removed.');
+    } catch {
+      setHighlightState('Could not remove highlights.');
+    }
+  };
+
+  const handleLinkCheck = async () => {
+    setLinkBusy(true);
+    setLinkError(null);
+    try {
+      const allowed = await requestLinkCheckPermission();
+      if (!allowed) {
+        setLinkError('Permission to request link URLs was declined.');
+        return;
+      }
+      const hrefs = httpLinksFrom(
+        result.links.map((item) => item.href),
+        result.page.url,
+      );
+      setLinkResults(await checkLinkStatuses(hrefs));
+    } catch (error) {
+      setLinkError(error instanceof Error ? error.message : 'Link check failed.');
+    } finally {
+      setLinkBusy(false);
     }
   };
 
@@ -87,7 +147,29 @@ export function ResultsShell({ result, onRescan, onIgnoreCheck }: ResultsShellPr
           >
             {copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Copy failed' : 'Copy Summary'}
           </button>
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="rounded-md border border-surface-border bg-white px-2.5 py-1 text-xs font-medium hover:bg-surface-muted"
+          >
+            Print / PDF
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleHighlight()}
+            className="rounded-md border border-surface-border bg-white px-2.5 py-1 text-xs font-medium hover:bg-surface-muted"
+          >
+            Highlight on page
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleClearHighlight()}
+            className="rounded-md border border-surface-border bg-white px-2.5 py-1 text-xs font-medium hover:bg-surface-muted"
+          >
+            Clear highlights
+          </button>
         </div>
+        {highlightState ? <p className="mt-2 text-[11px] text-ink-muted">{highlightState}</p> : null}
       </div>
 
       <CategoryNav active={section} onChange={setSection} />
@@ -162,6 +244,29 @@ export function ResultsShell({ result, onRescan, onIgnoreCheck }: ResultsShellPr
         {section === 'images' ? (
           <div className="mt-3">
             <ImageTable images={result.images} />
+          </div>
+        ) : null}
+
+        {section === 'links' ? (
+          <div className="mt-3 rounded-md border border-surface-border bg-white px-3 py-3">
+            <p className="text-xs leading-5 text-ink-secondary">
+              Optional HTTP checks (max {LINK_CHECK_LIMIT} unique http(s) links). Chrome will ask for extra
+              site access. This is not a full crawler.
+            </p>
+            <button
+              type="button"
+              onClick={() => void handleLinkCheck()}
+              disabled={linkBusy}
+              className="mt-2 rounded-md border border-surface-border px-2.5 py-1 text-xs font-medium hover:bg-surface-muted disabled:opacity-50"
+            >
+              {linkBusy ? 'Checking links…' : 'Check link statuses'}
+            </button>
+            {linkError ? <p className="mt-2 text-xs text-fail">{linkError}</p> : null}
+            {linkResults ? (
+              <p className="mt-2 text-xs text-ink-secondary">
+                {linkResults.filter((item) => !item.ok).length} failed / {linkResults.length} checked
+              </p>
+            ) : null}
           </div>
         ) : null}
 

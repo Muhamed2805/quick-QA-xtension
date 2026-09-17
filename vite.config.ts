@@ -11,6 +11,14 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        report: path.resolve(__dirname, 'report.html'),
+        sidepanel: path.resolve(__dirname, 'sidepanel.html'),
+      },
+    },
+  },
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],

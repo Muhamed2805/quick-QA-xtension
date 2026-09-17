@@ -27,5 +27,9 @@ export default defineManifest({
     service_worker: 'src/extension/background.ts',
     type: 'module',
   },
-  permissions: ['activeTab', 'scripting', 'storage'],
+  side_panel: {
+    default_path: 'sidepanel.html',
+  },
+  permissions: ['activeTab', 'scripting', 'storage', 'sidePanel'],
+  optional_host_permissions: ['http://*/*', 'https://*/*'],
 });

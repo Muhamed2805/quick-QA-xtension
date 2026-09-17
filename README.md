@@ -4,7 +4,7 @@ Quick QA is a Manifest V3 Chrome extension that scans the currently open webpage
 
 Analysis runs **locally in the browser**. Page content is not sent to external servers, AI APIs, or cloud dashboards.
 
-Status: **1.1.0** — quieter reports (grouped duplicate checks, issues-only filter, hide-check, better icon/link heuristics). Store listing copy is in [STORE.md](./STORE.md). Privacy policy is in [PRIVACY.md](./PRIVACY.md). Manual checks are in [MANUAL_QA.md](./MANUAL_QA.md).
+Status: **1.2.0** — local extras: side panel, printable report, compare scans, on-page highlight, optional link HTTP checks. Still no Lighthouse, AI, or cloud.
 
 ## Requirements analysis
 
@@ -84,6 +84,8 @@ factor(pass) = 1, factor(warning) = 0.5, factor(fail) = 0, factor(info) = exclud
 | `activeTab` | M1 | Read the current tab URL after the user opens the popup; later, temporarily allow `executeScript` on that tab. |
 | `scripting` | M2 | Inject the read-only snapshot collector. |
 | `storage` | v1 | `chrome.storage.local` for compact scan history. |
+| `sidePanel` | 1.2 | Optional wider UI next to the page. |
+| optional `http(s):*/*` | 1.2 | Only if the user clicks **Check link statuses**. |
 
 Not requested in v1: `<all_urls>`, cookies, webRequest, identity, downloads, or clipboard permission (the Clipboard API works in the popup from a user gesture).
 
@@ -147,7 +149,7 @@ Defined in `src/types/index.ts`:
 | **M8** | Export + scan history |
 | **M9** | Testing + polish + error handling |
 
-Deferred on purpose: broken-link HTTP checks, Lighthouse, AI copy, screenshots, PDF, compare, teams, cloud, custom rules, regression runs, side panel, in-page highlight.
+Deferred on purpose: Lighthouse, AI copy, team accounts, cloud dashboard, custom rule languages, automated CI regression.
 
 ## Getting started
 

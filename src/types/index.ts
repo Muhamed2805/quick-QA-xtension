@@ -85,6 +85,14 @@ export interface ScanHistoryEntry {
   overallScore: number;
   errorCount: number;
   warningCount: number;
+  categoryScores?: { category: QACategory; label: string; score: number }[];
+}
+
+export interface LinkStatusResult {
+  href: string;
+  ok: boolean;
+  status: number | null;
+  error?: string;
 }
 
 export type RestrictedPageReason =
