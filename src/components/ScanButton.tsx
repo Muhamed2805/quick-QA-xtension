@@ -12,7 +12,7 @@ export function ScanButton({ onClick, loading = false, disabled = false }: ScanB
       disabled={disabled || loading}
       className="w-full rounded-md bg-ink px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-400"
     >
-      {loading ? 'Connecting to page…' : 'Scan Current Page'}
+      {loading ? 'Scanning page…' : 'Scan Current Page'}
     </button>
   );
 }

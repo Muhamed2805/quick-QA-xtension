@@ -43,54 +43,27 @@ export interface ScanSummary {
   totalChecks: number;
 }
 
-export interface PageInfo {
-  url: string;
-  protocol: string;
-  hostname: string;
-  title?: string;
-  lang?: string | null;
-  charset?: string | null;
-}
+export type {
+  AriaHintSnapshot,
+  ButtonSnapshot,
+  ContentSnapshot,
+  FormFieldInfo,
+  FormInfo,
+  HeadingInfo,
+  ImageInfo,
+  InputSnapshot,
+  LinkInfo,
+  LinkKind,
+  PageInfo,
+  PageSnapshot,
+  PerformanceSnapshot,
+  SnapshotLimits,
+  SnapshotMeta,
+  TabIndexSnapshot,
+  TechnicalSnapshot,
+} from './snapshot';
 
-export interface LinkInfo {
-  href: string;
-  text: string;
-  kind: 'internal' | 'external' | 'anchor' | 'mailto' | 'tel' | 'javascript' | 'empty' | 'other';
-  targetBlank: boolean;
-  rel: string | null;
-  hasNoopener: boolean;
-  hasNoreferrer: boolean;
-}
-
-export interface ImageInfo {
-  src: string;
-  alt: string | null;
-  width: number | null;
-  height: number | null;
-  naturalWidth?: number | null;
-  naturalHeight?: number | null;
-  loading?: string | null;
-  broken: boolean;
-  status: 'ok' | 'missing-alt' | 'empty-alt' | 'broken' | 'oversized' | 'unknown';
-}
-
-export interface FormFieldInfo {
-  tag: string;
-  type: string | null;
-  hasName: boolean;
-  hasId: boolean;
-  hasLabel: boolean;
-  hasPlaceholder: boolean;
-  required: boolean;
-}
-
-export interface FormInfo {
-  action: string | null;
-  method: string;
-  fieldCount: number;
-  hasSubmitControl: boolean;
-  fields: FormFieldInfo[];
-}
+import type { FormInfo, ImageInfo, LinkInfo, PageInfo, PageSnapshot } from './snapshot';
 
 export interface ScanResult {
   scannedAt: string;
@@ -101,6 +74,7 @@ export interface ScanResult {
   links: LinkInfo[];
   images: ImageInfo[];
   forms: FormInfo[];
+  snapshot: PageSnapshot;
 }
 
 export interface ScanHistoryEntry {
@@ -119,7 +93,11 @@ export type RestrictedPageReason =
   | 'extension-page'
   | 'missing-url'
   | 'no-active-tab'
-  | 'cannot-inspect';
+  | 'cannot-inspect'
+  | 'scripting-unavailable'
+  | 'injection-failed'
+  | 'empty-snapshot'
+  | 'tab-changed';
 
 export interface ActiveTabInfo {
   tabId: number;

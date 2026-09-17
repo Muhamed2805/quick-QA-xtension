@@ -8,6 +8,11 @@ const ERROR_COPY: Record<TabAccessError['code'], string> = {
   'new-tab': 'The New Tab page cannot be scanned. Open a website first.',
   'extension-page': 'Extension pages cannot be scanned.',
   'cannot-inspect': 'This page cannot be inspected. Open a standard http or https website.',
+  'scripting-unavailable': 'Page inspection is unavailable. Reload the extension and try again.',
+  'injection-failed':
+    'Quick QA could not inspect this page. Reload the tab, then open the extension again.',
+  'empty-snapshot': 'The page returned no data. Reload the tab and scan again.',
+  'tab-changed': 'The tab changed or reloaded during the scan. Open the page and scan again.',
 };
 
 export function getTabAccessError(code: TabAccessError['code']): TabAccessError {

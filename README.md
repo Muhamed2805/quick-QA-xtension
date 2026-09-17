@@ -4,7 +4,7 @@ Quick QA is a Manifest V3 Chrome extension that scans the currently open webpage
 
 Analysis runs **locally in the browser**. Page content is not sent to external servers, AI APIs, or cloud dashboards.
 
-Status: **Milestone 1** — extension foundation and popup UI.
+Status: **Milestone 2** — scanning engine and page snapshot (no scored QA rules yet).
 
 ## Requirements analysis
 
@@ -13,7 +13,7 @@ Quick QA is a read-only auditor for the active tab. It is aimed at developers, Q
 Product constraints for v1:
 
 - Inspect the current page only; do not mutate the DOM or inject visible page UI.
-- Keep permissions minimal (`activeTab` now; `scripting` and `storage` later).
+- Keep permissions minimal (`activeTab` + `scripting` now; `storage` later).
 - Never collect password values or live form input.
 - Score 0–100 from weighted checks, plus per-category scores.
 - Export JSON and copy a text summary later; keep the export shape extensible for PDF.
@@ -40,7 +40,7 @@ The service worker stays thin. It does not scrape pages. Later it can own histor
 1. User opens the extension action. That user gesture grants **activeTab** on the current tab.
 2. Popup calls `chrome.tabs.query({ active: true, currentWindow: true })`.
 3. Restricted URLs (`chrome://`, New Tab, Web Store, extension pages) are rejected with a clear message.
-4. **M2+:** popup calls `chrome.scripting.executeScript` with a function that walks the DOM and returns JSON (titles, metas, headings, links, images, forms, timings). The function must not write to the page.
+4. Popup calls `chrome.scripting.executeScript` with a self-contained read-only collector (`collectPageSnapshot`). The function walks the DOM and returns JSON. It does not write to the page and does not read form values.
 5. Checks consume the snapshot only. No extra network requests to page links in v1.
 
 This avoids a persistent content script and avoids `<all_urls>` host permissions.
@@ -102,12 +102,15 @@ quick-QA-xtension/
 │   ├── popup/                 # React popup entry + shell
 │   ├── components/            # Reusable UI
 │   ├── features/popup/        # Popup-specific views
-│   ├── extension/             # Chrome adapters (tabs, later scripting)
+│   ├── extension/             # Chrome adapters (tabs, snapshot capture)
+│   ├── engine/                # runScan orchestration
 │   ├── hooks/
 │   ├── types/                 # Shared TypeScript contracts
 │   ├── utils/
-│   ├── checks/                # M2+ one file per rule
-│   │   ├── seo/
+│   ├── checks/                # registry + one file per rule
+│   │   ├── runChecks.ts
+│   │   ├── registry.ts
+│   │   ├── seo/               # M3+
 │   │   ├── accessibility/
 │   │   ├── links/
 │   │   ├── images/
@@ -126,6 +129,7 @@ Defined in `src/types/index.ts`:
 - `QACheckResult`
 - `ScanResult` / `ScanSummary` / `CategorySummary`
 - `PageInfo`, `LinkInfo`, `ImageInfo`, `FormInfo`
+- `PageSnapshot` and related snapshot types (`src/types/snapshot.ts`)
 - `ScanHistoryEntry`
 - `ActiveTabInfo` / `TabAccessError`
 
@@ -134,7 +138,7 @@ Defined in `src/types/index.ts`:
 | ID | Scope |
 |---|---|
 | **M1** | Chrome extension foundation + popup UI |
-| M2 | Scanning engine and shared snapshot types |
+| **M2** | Scanning engine and shared snapshot types |
 | M3 | SEO checks |
 | M4 | Accessibility + image checks |
 | M5 | Links + forms |
