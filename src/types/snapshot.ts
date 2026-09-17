@@ -20,6 +20,7 @@ export interface PageInfo {
 export interface LinkInfo {
   href: string;
   text: string;
+  accessibleName: string;
   kind: LinkKind;
   targetBlank: boolean;
   rel: string | null;
@@ -35,6 +36,8 @@ export interface ImageInfo {
   naturalWidth?: number | null;
   naturalHeight?: number | null;
   loading?: string | null;
+  hasWidthAttr: boolean;
+  hasHeightAttr: boolean;
   broken: boolean;
   status: 'ok' | 'missing-alt' | 'empty-alt' | 'broken' | 'oversized' | 'unknown';
 }

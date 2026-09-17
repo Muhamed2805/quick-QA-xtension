@@ -4,7 +4,7 @@ Quick QA is a Manifest V3 Chrome extension that scans the currently open webpage
 
 Analysis runs **locally in the browser**. Page content is not sent to external servers, AI APIs, or cloud dashboards.
 
-Status: **Milestone 3** — SEO checks on the local page snapshot.
+Status: **v1 complete** — local scan engine, category checks, scoring, JSON export, copy summary, and local history.
 
 ## Requirements analysis
 
@@ -13,7 +13,7 @@ Quick QA is a read-only auditor for the active tab. It is aimed at developers, Q
 Product constraints for v1:
 
 - Inspect the current page only; do not mutate the DOM or inject visible page UI.
-- Keep permissions minimal (`activeTab` + `scripting` now; `storage` later).
+- Keep permissions minimal (`activeTab`, `scripting`, `storage`).
 - Never collect password values or live form input.
 - Score 0–100 from weighted checks, plus per-category scores.
 - Export JSON and copy a text summary later; keep the export shape extensible for PDF.
@@ -69,7 +69,7 @@ Adding a rule means adding a file and registering it—not editing a monolith.
 - Category scores use the same formula on that category’s weighted checks.
 - Overall score is not claimed to match Lighthouse.
 
-Planned formula (implemented in M7):
+Planned formula (implemented):
 
 ```
 score = round(100 * earned / max)
@@ -83,7 +83,7 @@ factor(pass) = 1, factor(warning) = 0.5, factor(fail) = 0, factor(info) = exclud
 |---|---|---|
 | `activeTab` | M1 | Read the current tab URL after the user opens the popup; later, temporarily allow `executeScript` on that tab. |
 | `scripting` | M2 | Inject the read-only snapshot collector. |
-| `storage` | M8 | `chrome.storage.local` for compact scan history. |
+| `storage` | v1 | `chrome.storage.local` for compact scan history. |
 
 Not requested in v1: `<all_urls>`, cookies, webRequest, identity, downloads, or clipboard permission (the Clipboard API works in the popup from a user gesture).
 
@@ -140,12 +140,12 @@ Defined in `src/types/index.ts`:
 | **M1** | Chrome extension foundation + popup UI |
 | **M2** | Scanning engine and shared snapshot types |
 | **M3** | SEO checks |
-| M4 | Accessibility + image checks |
-| M5 | Links + forms |
-| M6 | Content + technical checks |
-| M7 | Scoring + overview dashboard |
-| M8 | Export + scan history |
-| M9 | Testing + polish + error handling |
+| **M4** | Accessibility + image checks |
+| **M5** | Links + forms |
+| **M6** | Content + technical checks |
+| **M7** | Scoring + overview dashboard |
+| **M8** | Export + scan history |
+| **M9** | Testing + polish + error handling |
 
 Deferred on purpose: broken-link HTTP checks, Lighthouse, AI copy, screenshots, PDF, compare, teams, cloud, custom rules, regression runs, side panel, in-page highlight.
 
@@ -182,6 +182,7 @@ npm run build
 |---|---|
 | `npm run dev` | Watch build for the extension |
 | `npm run build` | Typecheck and production build |
+| `npm run test` | Unit tests (Vitest) |
 | `npm run lint` | ESLint |
 | `npm run format` | Prettier |
 

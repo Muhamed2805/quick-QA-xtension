@@ -9,7 +9,7 @@ type CategoryNavProps = {
 export function CategoryNav({ active, onChange }: CategoryNavProps) {
   return (
     <nav
-      className="flex gap-1 overflow-x-auto border-b border-surface-border bg-surface-raised px-3 py-2"
+      className="flex flex-wrap gap-1 border-b border-surface-border bg-surface-raised px-3 py-2"
       aria-label="Report sections"
     >
       {CATEGORY_NAV.map((item) => {

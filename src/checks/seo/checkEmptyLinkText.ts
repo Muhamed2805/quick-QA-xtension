@@ -1,11 +1,10 @@
+import { crawlableLinks, isNamelessLink } from '@/utils/links';
 import { seoCheck } from '@/checks/seo/helpers';
 import type { CheckFn } from '@/checks/runChecks';
 
 export const checkEmptyLinkText: CheckFn = (snapshot) => {
-  const candidates = snapshot.links.filter(
-    (link) => link.kind !== 'empty' && link.kind !== 'javascript',
-  );
-  const empty = candidates.filter((link) => !link.text.trim()).length;
+  const candidates = crawlableLinks(snapshot.links);
+  const empty = candidates.filter(isNamelessLink).length;
 
   if (candidates.length === 0) {
     return seoCheck({
@@ -23,7 +22,7 @@ export const checkEmptyLinkText: CheckFn = (snapshot) => {
     return seoCheck({
       id: 'seo-empty-link-text',
       title: 'Links with empty text',
-      description: 'Crawlable links include visible or accessible text.',
+      description: 'Crawlable links include visible text, aria-label, or image alt text.',
       status: 'pass',
       severity: 'info',
       currentValue: 0,
@@ -34,10 +33,10 @@ export const checkEmptyLinkText: CheckFn = (snapshot) => {
   return seoCheck({
     id: 'seo-empty-link-text',
     title: 'Links with empty text',
-    description: `${empty} link(s) have no text. Crawlers and users may not understand the destination.`,
+    description: `${empty} link(s) have no accessible name (no text, aria-label, or image alt).`,
     status: 'warning',
     severity: 'warning',
-    recommendation: 'Give every link meaningful text, or an image with alt text inside the link.',
+    recommendation: 'Give every link meaningful text, aria-label, or an image with alt text.',
     currentValue: empty,
     weight: 4,
   });

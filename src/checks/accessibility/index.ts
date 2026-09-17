@@ -1,0 +1,11 @@
+export { checkA11yAria } from '@/checks/accessibility/checkA11yAria';
+export { checkA11yButtons } from '@/checks/accessibility/checkA11yButtons';
+export { checkA11yDocumentTitle } from '@/checks/accessibility/checkA11yDocumentTitle';
+export { checkA11yEmptyAlt } from '@/checks/accessibility/checkA11yEmptyAlt';
+export { checkA11yEmptyLinks } from '@/checks/accessibility/checkA11yEmptyLinks';
+export { checkA11yFieldNameId } from '@/checks/accessibility/checkA11yFieldNameId';
+export { checkA11yHeadings } from '@/checks/accessibility/checkA11yHeadings';
+export { checkA11yInputs } from '@/checks/accessibility/checkA11yInputs';
+export { checkA11yLang } from '@/checks/accessibility/checkA11yLang';
+export { checkA11yMissingAlt } from '@/checks/accessibility/checkA11yMissingAlt';
+export { checkA11yTabIndex } from '@/checks/accessibility/checkA11yTabIndex';

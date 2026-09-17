@@ -1,13 +1,15 @@
 import { DomainCard } from '@/components/DomainCard';
 import { ErrorPanel } from '@/components/ErrorPanel';
 import { Header } from '@/components/Header';
+import { HistoryList } from '@/components/HistoryList';
 import { ScanButton } from '@/components/ScanButton';
 import { captureSnapshot } from '@/extension/captureSnapshot';
+import { clearHistory, loadHistory, saveHistoryEntry } from '@/extension/history';
 import { ResultsShell } from '@/features/popup/ResultsShell';
 import { runScan } from '@/engine/runScan';
 import { useActiveTab } from '@/hooks/useActiveTab';
-import type { ScanResult } from '@/types';
-import { useState } from 'react';
+import type { ScanHistoryEntry, ScanResult } from '@/types';
+import { useEffect, useState } from 'react';
 
 type View = 'home' | 'results';
 
@@ -24,6 +26,13 @@ export function App() {
   const [scanBusy, setScanBusy] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [result, setResult] = useState<ScanResult | null>(null);
+  const [history, setHistory] = useState<ScanHistoryEntry[]>([]);
+
+  useEffect(() => {
+    void loadHistory()
+      .then(setHistory)
+      .catch(() => setHistory([]));
+  }, []);
 
   const handleScan = async () => {
     setScanBusy(true);
@@ -32,8 +41,15 @@ export function App() {
     try {
       const active = await refresh();
       const snapshot = await captureSnapshot(active.tabId);
-      setResult(runScan(snapshot));
+      const next = runScan(snapshot);
+      setResult(next);
       setView('results');
+      try {
+        const entries = await saveHistoryEntry(next);
+        setHistory(entries);
+      } catch {
+        /* history is optional */
+      }
     } catch (caught) {
       setResult(null);
       setScanError(errorMessage(caught));
@@ -49,6 +65,12 @@ export function App() {
     void refresh().catch(() => {
       /* home view already shows tab access errors */
     });
+  };
+
+  const handleClearHistory = () => {
+    void clearHistory()
+      .then(() => setHistory([]))
+      .catch(() => setHistory([]));
   };
 
   if (view === 'results' && result) {
@@ -75,13 +97,7 @@ export function App() {
           Quick QA inspects the current tab locally. Page content is never uploaded.
         </p>
 
-        <section className="mt-auto rounded-md border border-surface-border bg-surface-raised px-3 py-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">History</h2>
-            <span className="text-[11px] text-ink-muted">Local only</span>
-          </div>
-          <p className="mt-2 text-xs text-ink-secondary">No scans yet.</p>
-        </section>
+        <HistoryList entries={history} onClear={handleClearHistory} />
       </main>
     </div>
   );

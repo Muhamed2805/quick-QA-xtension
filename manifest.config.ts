@@ -26,5 +26,5 @@ export default defineManifest({
     service_worker: 'src/extension/background.ts',
     type: 'module',
   },
-  permissions: ['activeTab', 'scripting'],
+  permissions: ['activeTab', 'scripting', 'storage'],
 });

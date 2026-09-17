@@ -1,15 +1,7 @@
 import { checkRegistry } from '@/checks/registry';
 import { runChecks } from '@/checks/runChecks';
-import type { PageSnapshot, ScanResult, ScanSummary } from '@/types';
-
-const EMPTY_SUMMARY: ScanSummary = {
-  overallScore: 0,
-  passed: 0,
-  warnings: 0,
-  errors: 0,
-  info: 0,
-  totalChecks: 0,
-};
+import { buildCategorySummaries, buildScanSummary } from '@/scoring/scoreChecks';
+import type { PageSnapshot, ScanResult } from '@/types';
 
 export function runScan(snapshot: PageSnapshot): ScanResult {
   const checks = runChecks(snapshot, checkRegistry);
@@ -24,15 +16,8 @@ export function runScan(snapshot: PageSnapshot): ScanResult {
       lang: snapshot.lang,
       charset: snapshot.charset,
     },
-    summary: {
-      ...EMPTY_SUMMARY,
-      totalChecks: checks.length,
-      info: checks.filter((item) => item.status === 'info').length,
-      passed: checks.filter((item) => item.status === 'pass').length,
-      warnings: checks.filter((item) => item.status === 'warning').length,
-      errors: checks.filter((item) => item.status === 'fail').length,
-    },
-    categories: [],
+    summary: buildScanSummary(checks),
+    categories: buildCategorySummaries(checks),
     checks,
     links: snapshot.links,
     images: snapshot.images,

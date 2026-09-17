@@ -1,0 +1,9 @@
+export { checkFormActionMethod } from '@/checks/forms/checkFormActionMethod';
+export { checkFormButtonType } from '@/checks/forms/checkFormButtonType';
+export { checkFormCount } from '@/checks/forms/checkFormCount';
+export { checkFormLabels } from '@/checks/forms/checkFormLabels';
+export { checkFormNames } from '@/checks/forms/checkFormNames';
+export { checkFormPasswords } from '@/checks/forms/checkFormPasswords';
+export { checkFormPlaceholders } from '@/checks/forms/checkFormPlaceholders';
+export { checkFormRequired } from '@/checks/forms/checkFormRequired';
+export { checkFormSubmit } from '@/checks/forms/checkFormSubmit';

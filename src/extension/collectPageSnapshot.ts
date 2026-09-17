@@ -73,6 +73,8 @@ export function collectPageSnapshot(): PageSnapshot {
     if (aria?.trim()) return aria.trim();
     const title = el.getAttribute('title');
     if (title?.trim()) return title.trim();
+    const svgTitle = el.querySelector('svg title');
+    if (svgTitle && textOf(svgTitle)) return textOf(svgTitle);
     const img = el.querySelector('img[alt]');
     const imgAlt = img?.getAttribute('alt');
     if (imgAlt?.trim()) return imgAlt.trim();
@@ -125,6 +127,7 @@ export function collectPageSnapshot(): PageSnapshot {
     return {
       href: node.getAttribute('href') ?? '',
       text: textOf(node),
+      accessibleName: accessibleName(node),
       kind: classifyHref(node.getAttribute('href'), location.hostname),
       targetBlank: node.getAttribute('target') === '_blank',
       rel,
@@ -149,6 +152,8 @@ export function collectPageSnapshot(): PageSnapshot {
       naturalWidth,
       naturalHeight,
       loading: attr(img, 'loading'),
+      hasWidthAttr: img.hasAttribute('width'),
+      hasHeightAttr: img.hasAttribute('height'),
       broken,
       status: imageStatus(alt, broken, naturalWidth, naturalHeight),
     };
