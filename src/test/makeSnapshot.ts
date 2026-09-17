@@ -43,6 +43,7 @@ export function makeSnapshot(overrides: SnapshotOverrides = {}): PageSnapshot {
         rel: null,
         hasNoopener: false,
         hasNoreferrer: false,
+        visible: true,
       },
     ],
     images: [
@@ -61,7 +62,7 @@ export function makeSnapshot(overrides: SnapshotOverrides = {}): PageSnapshot {
       },
     ],
     forms: [],
-    buttons: [{ tag: 'button', type: 'button', hasAccessibleName: true }],
+    buttons: [{ tag: 'button', type: 'button', hasAccessibleName: true, visible: true }],
     inputs: [],
     tabIndexes: [],
     ariaHints: [],

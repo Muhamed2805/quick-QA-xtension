@@ -73,12 +73,27 @@ export function collectPageSnapshot(): PageSnapshot {
     if (aria?.trim()) return aria.trim();
     const title = el.getAttribute('title');
     if (title?.trim()) return title.trim();
+    const svgLabel = el.querySelector('svg[aria-label]');
+    const svgAria = svgLabel?.getAttribute('aria-label');
+    if (svgAria?.trim()) return svgAria.trim();
     const svgTitle = el.querySelector('svg title');
     if (svgTitle && textOf(svgTitle)) return textOf(svgTitle);
     const img = el.querySelector('img[alt]');
     const imgAlt = img?.getAttribute('alt');
     if (imgAlt?.trim()) return imgAlt.trim();
     return textOf(el);
+  };
+
+  const isDisplayed = (el: Element): boolean => {
+    if (el.hasAttribute('hidden')) return false;
+    if (el.getAttribute('aria-hidden') === 'true') return false;
+    if (el.closest('[hidden], [aria-hidden="true"]')) return false;
+    const style = window.getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+      return false;
+    }
+    const rect = el.getBoundingClientRect();
+    return rect.width >= 2 && rect.height >= 2;
   };
 
   const classifyHref = (href: string | null, hostname: string): PageSnapshot['links'][number]['kind'] => {
@@ -133,6 +148,7 @@ export function collectPageSnapshot(): PageSnapshot {
       rel,
       hasNoopener: relTokens.has('noopener'),
       hasNoreferrer: relTokens.has('noreferrer'),
+      visible: isDisplayed(node),
     };
   });
 
@@ -200,6 +216,7 @@ export function collectPageSnapshot(): PageSnapshot {
     tag: el.tagName.toLowerCase(),
     type: el.getAttribute('type'),
     hasAccessibleName: Boolean(accessibleName(el)),
+    visible: isDisplayed(el),
   }));
 
   const inputNodes = Array.from(

@@ -1,9 +1,9 @@
 import { a11yCheck } from '@/checks/accessibility/helpers';
 import type { CheckFn } from '@/checks/runChecks';
-import { crawlableLinks, isNamelessLink } from '@/utils/links';
+import { visibleCrawlableLinks, isNamelessLink } from '@/utils/links';
 
 export const checkA11yEmptyLinks: CheckFn = (snapshot) => {
-  const candidates = crawlableLinks(snapshot.links);
+  const candidates = visibleCrawlableLinks(snapshot.links);
   const empty = candidates.filter(isNamelessLink).length;
 
   if (candidates.length === 0) {

@@ -27,6 +27,7 @@ describe('nameless links', () => {
         rel: null,
         hasNoopener: false,
         hasNoreferrer: false,
+        visible: true,
       }),
     ).toBe(false);
   });

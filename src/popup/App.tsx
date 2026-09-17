@@ -1,3 +1,7 @@
+import { ignoreCheck, loadIgnoredChecks, restoreIgnoredChecks } from '@/extension/ignores';
+import { applyIgnoredChecks } from '@/scoring/applyIgnoredChecks';
+import { runScan } from '@/engine/runScan';
+import { ResultsShell } from '@/features/popup/ResultsShell';
 import { DomainCard } from '@/components/DomainCard';
 import { ErrorPanel } from '@/components/ErrorPanel';
 import { Header } from '@/components/Header';
@@ -5,11 +9,9 @@ import { HistoryList } from '@/components/HistoryList';
 import { ScanButton } from '@/components/ScanButton';
 import { captureSnapshot } from '@/extension/captureSnapshot';
 import { clearHistory, loadHistory, saveHistoryEntry } from '@/extension/history';
-import { ResultsShell } from '@/features/popup/ResultsShell';
-import { runScan } from '@/engine/runScan';
 import { useActiveTab } from '@/hooks/useActiveTab';
 import type { ScanHistoryEntry, ScanResult } from '@/types';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 type View = 'home' | 'results';
 
@@ -27,12 +29,21 @@ export function App() {
   const [scanError, setScanError] = useState<string | null>(null);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [history, setHistory] = useState<ScanHistoryEntry[]>([]);
+  const [ignoredIds, setIgnoredIds] = useState<string[]>([]);
 
   useEffect(() => {
     void loadHistory()
       .then(setHistory)
       .catch(() => setHistory([]));
+    void loadIgnoredChecks()
+      .then(setIgnoredIds)
+      .catch(() => setIgnoredIds([]));
   }, []);
+
+  const presented = useMemo(
+    () => (result ? applyIgnoredChecks(result, ignoredIds) : null),
+    [result, ignoredIds],
+  );
 
   const handleScan = async () => {
     setScanBusy(true);
@@ -45,7 +56,7 @@ export function App() {
       setResult(next);
       setView('results');
       try {
-        const entries = await saveHistoryEntry(next);
+        const entries = await saveHistoryEntry(applyIgnoredChecks(next, ignoredIds));
         setHistory(entries);
       } catch {
         /* history is optional */
@@ -73,11 +84,23 @@ export function App() {
       .catch(() => setHistory([]));
   };
 
-  if (view === 'results' && result) {
+  const handleIgnore = (id: string) => {
+    void ignoreCheck(id)
+      .then(setIgnoredIds)
+      .catch(() => setIgnoredIds((current) => [...new Set([...current, id])]));
+  };
+
+  const handleRestoreIgnored = () => {
+    void restoreIgnoredChecks()
+      .then(() => setIgnoredIds([]))
+      .catch(() => setIgnoredIds([]));
+  };
+
+  if (view === 'results' && presented) {
     return (
       <>
         <Header subtitle="Report" />
-        <ResultsShell result={result} onRescan={handleNewScan} />
+        <ResultsShell result={presented} onRescan={handleNewScan} onIgnoreCheck={handleIgnore} />
       </>
     );
   }
@@ -96,6 +119,19 @@ export function App() {
         <p className="text-xs leading-5 text-ink-muted">
           Quick QA inspects the current tab locally. Page content is never uploaded.
         </p>
+
+        {ignoredIds.length > 0 ? (
+          <div className="rounded-md border border-surface-border bg-white px-3 py-2">
+            <p className="text-xs text-ink-secondary">{ignoredIds.length} hidden check(s) stay local.</p>
+            <button
+              type="button"
+              onClick={handleRestoreIgnored}
+              className="mt-1 text-[11px] font-medium text-ink-secondary hover:text-ink"
+            >
+              Restore hidden checks
+            </button>
+          </div>
+        ) : null}
 
         <HistoryList entries={history} onClear={handleClearHistory} />
       </main>

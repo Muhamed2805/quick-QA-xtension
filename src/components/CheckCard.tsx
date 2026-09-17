@@ -17,9 +17,10 @@ const STATUS_LABEL: Record<QAStatus, string> = {
 
 type CheckCardProps = {
   check: QACheckResult;
+  onIgnore?: (id: string) => void;
 };
 
-export function CheckCard({ check }: CheckCardProps) {
+export function CheckCard({ check, onIgnore }: CheckCardProps) {
   const current = formatCurrentValue(check.currentValue);
 
   return (
@@ -43,6 +44,15 @@ export function CheckCard({ check }: CheckCardProps) {
           <span className="font-medium">Recommendation: </span>
           {check.recommendation}
         </p>
+      ) : null}
+      {onIgnore && check.status !== 'pass' ? (
+        <button
+          type="button"
+          onClick={() => onIgnore(check.id)}
+          className="mt-2 text-[11px] font-medium text-ink-muted hover:text-ink"
+        >
+          Hide this check
+        </button>
       ) : null}
     </article>
   );

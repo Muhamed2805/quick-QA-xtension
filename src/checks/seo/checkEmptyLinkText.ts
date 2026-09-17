@@ -1,9 +1,9 @@
-import { crawlableLinks, isNamelessLink } from '@/utils/links';
+import { visibleCrawlableLinks, isNamelessLink } from '@/utils/links';
 import { seoCheck } from '@/checks/seo/helpers';
 import type { CheckFn } from '@/checks/runChecks';
 
 export const checkEmptyLinkText: CheckFn = (snapshot) => {
-  const candidates = crawlableLinks(snapshot.links);
+  const candidates = visibleCrawlableLinks(snapshot.links);
   const empty = candidates.filter(isNamelessLink).length;
 
   if (candidates.length === 0) {

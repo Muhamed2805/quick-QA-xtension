@@ -2,8 +2,9 @@ import { a11yCheck } from '@/checks/accessibility/helpers';
 import type { CheckFn } from '@/checks/runChecks';
 
 export const checkA11yButtons: CheckFn = (snapshot) => {
-  const total = snapshot.buttons.length;
-  const unnamed = snapshot.buttons.filter((button) => !button.hasAccessibleName).length;
+  const actionable = snapshot.buttons.filter((button) => button.visible !== false);
+  const total = actionable.length;
+  const unnamed = actionable.filter((button) => !button.hasAccessibleName).length;
 
   if (total === 0) {
     return a11yCheck({

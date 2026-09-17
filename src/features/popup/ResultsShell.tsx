@@ -13,6 +13,7 @@ import { useState } from 'react';
 type ResultsShellProps = {
   result: ScanResult;
   onRescan: () => void;
+  onIgnoreCheck: (id: string) => void;
 };
 
 function scoreTone(score: number): 'pass' | 'warn' | 'fail' {
@@ -21,14 +22,21 @@ function scoreTone(score: number): 'pass' | 'warn' | 'fail' {
   return 'fail';
 }
 
-export function ResultsShell({ result, onRescan }: ResultsShellProps) {
+export function ResultsShell({ result, onRescan, onIgnoreCheck }: ResultsShellProps) {
   const [section, setSection] = useState<QACategory | 'overview'>('overview');
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const [issuesOnly, setIssuesOnly] = useState(true);
   const sectionLabel = CATEGORY_NAV.find((item) => item.id === section)?.label ?? 'Overview';
   const { page, checks, summary } = result;
   const issues = topIssues(checks, 8);
   const sectionChecks =
-    section === 'overview' ? [] : checks.filter((item) => item.category === section);
+    section === 'overview'
+      ? []
+      : checks.filter((item) => {
+          if (item.category !== section) return false;
+          if (!issuesOnly) return true;
+          return item.status === 'fail' || item.status === 'warning';
+        });
 
   const handleCopy = async () => {
     try {
@@ -127,7 +135,7 @@ export function ResultsShell({ result, onRescan }: ResultsShellProps) {
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">
                 Top issues
               </h3>
-              <CheckList checks={issues} emptyLabel="No errors or warnings on this scan." />
+              <CheckList checks={issues} emptyLabel="No errors or warnings on this scan." onIgnore={onIgnoreCheck} />
             </div>
           </div>
         ) : null}
@@ -159,7 +167,19 @@ export function ResultsShell({ result, onRescan }: ResultsShellProps) {
 
         {section !== 'overview' ? (
           <div className="mt-3">
-            <CheckList checks={sectionChecks} />
+            <label className="mb-3 flex items-center gap-2 text-xs text-ink-secondary">
+              <input
+                type="checkbox"
+                checked={issuesOnly}
+                onChange={(event) => setIssuesOnly(event.target.checked)}
+              />
+              Issues only
+            </label>
+            <CheckList
+              checks={sectionChecks}
+              emptyLabel={issuesOnly ? 'No errors or warnings in this category.' : 'No findings in this category.'}
+              onIgnore={onIgnoreCheck}
+            />
           </div>
         ) : null}
       </section>

@@ -26,6 +26,7 @@ export interface LinkInfo {
   rel: string | null;
   hasNoopener: boolean;
   hasNoreferrer: boolean;
+  visible: boolean;
 }
 
 export interface ImageInfo {
@@ -71,6 +72,7 @@ export interface ButtonSnapshot {
   tag: string;
   type: string | null;
   hasAccessibleName: boolean;
+  visible: boolean;
 }
 
 export interface InputSnapshot {

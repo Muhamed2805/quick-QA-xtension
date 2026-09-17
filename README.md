@@ -4,7 +4,7 @@ Quick QA is a Manifest V3 Chrome extension that scans the currently open webpage
 
 Analysis runs **locally in the browser**. Page content is not sent to external servers, AI APIs, or cloud dashboards.
 
-Status: **1.0.0** — local auditor ready to package. Store listing copy is in [STORE.md](./STORE.md). Privacy policy is in [PRIVACY.md](./PRIVACY.md). Manual checks are in [MANUAL_QA.md](./MANUAL_QA.md).
+Status: **1.1.0** — quieter reports (grouped duplicate checks, issues-only filter, hide-check, better icon/link heuristics). Store listing copy is in [STORE.md](./STORE.md). Privacy policy is in [PRIVACY.md](./PRIVACY.md). Manual checks are in [MANUAL_QA.md](./MANUAL_QA.md).
 
 ## Requirements analysis
 

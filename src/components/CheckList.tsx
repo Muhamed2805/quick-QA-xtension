@@ -5,9 +5,14 @@ import { sortChecks } from '@/utils/checks';
 type CheckListProps = {
   checks: QACheckResult[];
   emptyLabel?: string;
+  onIgnore?: (id: string) => void;
 };
 
-export function CheckList({ checks, emptyLabel = 'No findings in this category.' }: CheckListProps) {
+export function CheckList({
+  checks,
+  emptyLabel = 'No findings in this category.',
+  onIgnore,
+}: CheckListProps) {
   const ordered = sortChecks(checks);
 
   if (ordered.length === 0) {
@@ -21,7 +26,7 @@ export function CheckList({ checks, emptyLabel = 'No findings in this category.'
   return (
     <div className="flex flex-col gap-2">
       {ordered.map((check) => (
-        <CheckCard key={check.id} check={check} />
+        <CheckCard key={check.id} check={check} onIgnore={onIgnore} />
       ))}
     </div>
   );

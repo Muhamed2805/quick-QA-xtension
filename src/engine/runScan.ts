@@ -1,10 +1,11 @@
 import { checkRegistry } from '@/checks/registry';
 import { runChecks } from '@/checks/runChecks';
+import { dedupeGroupedChecks } from '@/scoring/dedupeChecks';
 import { buildCategorySummaries, buildScanSummary } from '@/scoring/scoreChecks';
 import type { PageSnapshot, ScanResult } from '@/types';
 
 export function runScan(snapshot: PageSnapshot): ScanResult {
-  const checks = runChecks(snapshot, checkRegistry);
+  const checks = dedupeGroupedChecks(runChecks(snapshot, checkRegistry));
 
   return {
     scannedAt: snapshot.collectedAt,
