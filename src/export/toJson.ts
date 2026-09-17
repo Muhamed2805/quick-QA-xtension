@@ -1,11 +1,12 @@
 import type { ScanResult } from '@/types';
+import { APP_VERSION } from '@/version';
 
 export function toExportDocument(result: ScanResult) {
   const { snapshot, ...rest } = result;
 
   return {
     generator: 'Quick QA',
-    version: '0.1.0',
+    version: APP_VERSION,
     ...rest,
     snapshot: {
       ...snapshot,

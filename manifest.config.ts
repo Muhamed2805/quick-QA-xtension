@@ -1,9 +1,10 @@
 import { defineManifest } from '@crxjs/vite-plugin';
+import { APP_VERSION } from './src/version';
 
 export default defineManifest({
   manifest_version: 3,
   name: 'Quick QA',
-  version: '0.1.0',
+  version: APP_VERSION,
   description:
     'Scan the current page for SEO, accessibility, content, and technical QA issues. Analysis stays on your device.',
   action: {

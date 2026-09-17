@@ -4,7 +4,7 @@ Quick QA is a Manifest V3 Chrome extension that scans the currently open webpage
 
 Analysis runs **locally in the browser**. Page content is not sent to external servers, AI APIs, or cloud dashboards.
 
-Status: **v1 complete** — local scan engine, category checks, scoring, JSON export, copy summary, and local history.
+Status: **1.0.0** — local auditor ready to package. Store listing copy is in [STORE.md](./STORE.md). Privacy policy is in [PRIVACY.md](./PRIVACY.md). Manual checks are in [MANUAL_QA.md](./MANUAL_QA.md).
 
 ## Requirements analysis
 
@@ -174,7 +174,17 @@ npm run build
 1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
 3. Click **Load unpacked**.
-4. Select the `dist` directory.
+4. Select the `dist` directory (not the repository root).
+
+Load-unpacked will fail with “manifest missing” if you pick the project folder. `manifest.json` is generated into `dist` by `npm run build` or `npm run dev`.
+
+## Chrome Web Store
+
+See [STORE.md](./STORE.md) for listing text, permission justifications, screenshot list, and ZIP commands. Host [PRIVACY.md](./PRIVACY.md) on GitHub and paste that URL into the store privacy field.
+
+## Manual QA
+
+Walk through [MANUAL_QA.md](./MANUAL_QA.md) before you ship a ZIP.
 
 ### Scripts
 
@@ -187,6 +197,8 @@ npm run build
 | `npm run format` | Prettier |
 
 ## Privacy
+
+See [PRIVACY.md](./PRIVACY.md). Short version:
 
 - Default mode is local-only.
 - No analytics, no remote scan API, no AI calls.
